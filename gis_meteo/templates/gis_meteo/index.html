@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Gis Meteo</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/event.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/supplemental.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/unresolved.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/21.2.7/css/dx.common.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/21.2.7/css/dx.material.teal.dark.css" />
+    <script src="https://cdn3.devexpress.com/jslib/21.2.7/js/dx.all.js"></script>
+  </head>
+  <body class="dx-viewport">
+    <div class="demo-container">
+      <div id="gridContainer"></div>
+    </div>
+    <script>
+        DevExpress.localization.locale('ru');
+
+        $(() => {
+          $('#gridContainer').dxDataGrid({
+            dataSource: '/gis_meteo/api/test/',
+            keyExpr: 'date',
+            showRowLines: true,
+            showBorders: true,
+            showColumnLines: true,
+            sorting: {
+              mode: 'none',
+            },
+            paging: {
+              pageSize: 10,
+            },
+            columns: [{
+              dataField: 'date',
+              dataType: 'date',
+              width: 110,
+            },
+            {
+              caption: 'Dynamics',
+              minWidth: 320,
+              cellTemplate(container, options) {
+                container.addClass('chart-cell');
+                $('<div />').dxChart({
+                dataSource: options.data.inner,
+                commonSeriesSettings: {
+                  argumentField: 'time',
+                  type: 'candlestick',
+                },
+                legend: {
+                    visible: false
+                },
+                size: {
+                    height: 150,
+                    width: 1000
+                },
+                series: [
+                  {
+                    openValueField: 'o',
+                    highValueField: 'h',
+                    lowValueField: 'l',
+                    closeValueField: 'c',
+                    reduction: {
+                      color: 'red',
+                    },
+                  },
+                ],
+                tooltip: {
+                  enabled: true,
+                  location: 'edge',
+                  customizeTooltip(arg) {
+                    return {
+                      text: `Open: ${arg.openValue}<br/>`
+                            + `Close: ${arg.closeValue}<br/>`
+                            + `High: ${arg.highValue}<br/>`
+                            + `Low: ${arg.lowValue}<br/>`,
+                    };
+                  },
+                },
+                }).appendTo(container);
+              },
+            }
+            ],
+          });
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+C:\Projects\venvs\datings\Scripts\python C:\Projects\datings\manage.py get_gm_data
