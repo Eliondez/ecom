@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from ..models import Product, Category
+from ..models import Product, Category, Currency
+
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ['code', 'sign']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -7,16 +13,21 @@ class ProductSerializer(serializers.ModelSerializer):
     supplier = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     in_cart = serializers.SerializerMethodField()
+    current_price = serializers.SerializerMethodField()
+    currency = CurrencySerializer()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'code',
-            'current_price', 'initial_price',
+            'id',
+            'name',
+            'code',
+            'current_price',
             'supplier',
             'image_url',
             'category',
-            'in_cart'
+            'in_cart',
+            'currency'
         ]
 
     def get_image_url(self, obj):
@@ -31,6 +42,9 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_in_cart(self, obj):
         in_cart = self.context.get('ids_in_cart', dict())
         return in_cart.get(obj.id, 0)
+
+    def get_current_price(self, obj):
+        return obj.currency_price
 
 
 class CategoryDictSerializer(serializers.ModelSerializer):

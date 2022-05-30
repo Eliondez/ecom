@@ -4,6 +4,16 @@ from django.core.validators import MinValueValidator
 from mptt.models import MPTTModel, TreeForeignKey
 
 
+class Currency(models.Model):
+    code = models.CharField(primary_key=True, verbose_name='Название', max_length=3)
+    sign = models.CharField(verbose_name='Знак', max_length=3, blank=True)
+    rate = models.DecimalField(verbose_name='Курс обмена', max_digits=16, decimal_places=8, default=1)
+
+    class Meta:
+        verbose_name = 'Валюта'
+        verbose_name_plural = 'Валюты'
+
+
 class Category(MPTTModel):
     """
     python manage.py dumpdata product.Category > categories.json
@@ -83,12 +93,32 @@ class Product(models.Model):
         null=True,
         blank=True
     )
-
     image = models.ImageField(
         upload_to='product',
         null=True,
         blank=True,
         verbose_name='Картинка'
+    )
+    currency = models.ForeignKey(
+        'Currency',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Валюта'
+    )
+    currency_price = models.DecimalField(
+        verbose_name='Цена',
+        decimal_places=2,
+        max_digits=9,
+        validators=[MinValueValidator(0)],
+        default=0
+    )
+    base_currency_price = models.DecimalField(
+        verbose_name='Цена в базовой валюте портала',
+        decimal_places=2,
+        max_digits=9,
+        validators=[MinValueValidator(0)],
+        default=0
     )
 
     class Meta:
@@ -98,3 +128,9 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_currency(self):
+        if not self.currency:
+            self.currency = Currency.objects.get(code='EUR')
+            self.save()
+        return self.currency

@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
-from ..models import Product, Category
+from ..models import Product, Category, Currency
 from product.api import serializers as product_serializers
 
 from counterparty.models import Counterparty
@@ -142,3 +142,14 @@ class ProductViewset(viewsets.ModelViewSet):
             )
         Product.objects.bulk_create(products)
         return Response({'status': 'password set'})
+
+    @action(detail=False, methods=['GET'])
+    def test(self, request):
+        products = Product.objects.all()
+        eur = Currency.objects.get(code='EUR')
+        for product in products:
+            product.currency_price = product.current_price
+            product.base_currency_price = product.current_price
+            product.currency = eur
+            product.save()
+        return Response({'status': 'ehheheheh'})
