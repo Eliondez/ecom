@@ -1,13 +1,6 @@
-.demo-container {
+.secondRow {
     display: flex;
-}
-
-#gridContainer {
-    width: 60%;
-}
-
-#rightContainer {
-    width: 40%;
+    margin-top: 30px;
 }
 
 body {
@@ -27,4 +20,22 @@ html {
 
 .hover-btn:hover {
     background-color: #d7d7d7;
+}
+
+.cart-list__item {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-list__item__id {
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.cart-list__item__supplier,
+.cart-list__item__price {
+    text-align: right;
 }

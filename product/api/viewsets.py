@@ -89,11 +89,32 @@ class ProductViewset(viewsets.ModelViewSet):
                 {'name': 'categories', 'ids': categories_set, 'model': Category},
                 {'name': 'suppliers', 'ids': suppliers_set, 'model': Counterparty},
             ])
+
+            res.data['template'] = 'azaza'
             return res
 
         serializer = self.get_serializer(queryset, many=True)
         res = serializer.data
         return Response(res)
+
+    @action(detail=False, methods=['GET'])
+    def get_products(self, request):
+        from django.template import loader
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        print('page', page)
+
+        template = loader.get_template('product/catalog_items.html')
+        context = {
+            'items': page,
+        }
+
+        return Response({
+            'template': template.render(context, request),
+            'meta': 'ozozo'
+        })
 
     @action(detail=False, methods=['GET'])
     def create_test_products(self, request):

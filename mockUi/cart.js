@@ -1,108 +1,52 @@
 async function initCart(options) {
     let token = options.token;
 
-    const store = new DevExpress.data.CustomStore({
-        key: 'id',
-        load(loadOptions) {
-            const deferred = $.Deferred();
-            const args = {};
+    let response = await fetch(getCartListUrl, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `token ${token}`
+        }
+    })
 
-            let params = ['dicts=suppliers,categories'];
+    let cartsData = await response.json();
 
-            let page_size = loadOptions.take;
-            let page = 1 + (loadOptions.skip / page_size);
-            params.push(`page_size=${page_size}`);
-            params.push(`page=${page}`);
+    $('.total-in-cart').text(`$${cartsData.sum}`);
 
-            let url = getCatalogUrl;
-            if (params.length) {
-                url = `${url}?${params.join('&')}`
-            }
-
-            $.ajax({
-                url: url,
-                dataType: 'json',
-                data: args,
-                success(result) {
-                    let supplierDict = {};
-                    result.dicts.suppliers.forEach(item => {
-                        supplierDict[item.id] = item.name
-                    })
-                    let categoriesDict = {};
-                    result.dicts.categories.forEach(item => {
-                        categoriesDict[item.id] = item.name
-                    })
-                    let items = result.results.map(item => {
-                        item.category = categoriesDict[item.category];
-                        item.supplier = supplierDict[item.supplier];
-                        return item
-                    })
-                    deferred.resolve(items, {
-                        totalCount: result.count,
-                    });
-                },
-                error() {
-                    deferred.reject('Data Loading Error');
-                },
-                timeout: 5000,
-            });
-
-            return deferred.promise();
-        },
-    });
-
-    async function addToCart(productId) {
-        const response = await fetch(addToCartUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `token ${token}`
-            },
-            body: JSON.stringify({
-                "product_id": productId,
-                "count": 1
-            })
-        })
-        const data = await response.json();
-    }
-
-    $('#gridContainer').dxDataGrid({
-        dataSource: store,
+    let cartTable = $('#cartContainer').dxDataGrid({
+        dataSource: [],
         showBorders: true,
-        remoteOperations: true,
-        paging: {
-            pageSize: 15,
-        },
+        height: 300,
         columns: [{
-            dataField: 'id',
-            width: 50
-        }, {
-            dataField: 'code',
-            width: 90,
+            dataField: 'product.name',
+            caption: 'name',
             alignment: 'center'
         }, {
-            dataField: 'category',
-            alignment: 'right'
+            dataField: 'product.code',
+            width: 90,
+            caption: 'code',
+            alignment: 'center'
         }, {
-            dataField: 'name',
+            dataField: 'count',
+            width: 90,
             alignment: 'right',
+            caption: 'count',
+        }, {
+            dataField: 'price',
+            alignment: 'right',
+            caption: 'price',
             width: 120
         }, {
-            dataField: 'current_price',
-            caption: 'Price',
+            dataField: 'sum',
+            caption: 'sum',
             alignment: 'right',
-            width: 60
+            width: 80
         }, {
-            dataField: 'supplier',
-            alignment: 'right',
-            width: 180
-        }, {
-            caption: 'Cart',
+            caption: '',
             alignment: 'center',
             width: 60,
             cellTemplate(container, options) {
                 $(container).addClass('hover-btn');
-                let item = $('<i class="dx-icon-cart"></i>');
+                let item = $('<i class="dx-icon-close"></i>');
                 container.on('click', function () {
                     addToCart(options.key)
                 })
@@ -111,5 +55,33 @@ async function initCart(options) {
         }
         ],
     }).dxDataGrid('instance');
+
+    $('#cartList').dxList({
+        dataSource: cartsData.carts,
+        height: '100%',
+        itemTemplate(data) {
+            const result = $('<div>').addClass('cart-list__item');
+            $('<div>').addClass('cart-list__item__id').text(`ID ${data.id}`).appendTo(result);
+            let rightCont = $('<div>');
+            $('<div>').addClass('cart-list__item__price').text(`$ ${data.order_sum}`).appendTo(rightCont);
+            $('<div>').addClass('cart-list__item__supplier').text(`${data.seller.name}`).appendTo(rightCont);
+            rightCont.appendTo(result);
+            return result;
+        },
+        onItemClick: function(options) {
+            getCartDetail(options.itemData.id)
+        }
+    }).dxList('instance');
+
+
+
+    async function getCartDetail(id) {
+        let cartData = await customFetch({
+            'url': `${getCartDetailUrl}?order_id=${id}`,
+            'token': token
+        })
+        cartTable.option('dataSource', cartData.items);
+        return cartData
+    }
 
 }

@@ -64,7 +64,7 @@ async function initCatalog(options) {
             })
         })
         const data = await response.json();
-        console.log('data', data);
+        DevExpress.ui.notify('Added to cart', 'success', 600);
     }
 
     $('#gridContainer').dxDataGrid({
@@ -72,7 +72,7 @@ async function initCatalog(options) {
         showBorders: true,
         remoteOperations: true,
         paging: {
-            pageSize: 15,
+            pageSize: 10,
         },
         columns: [{
             dataField: 'id',
@@ -80,25 +80,33 @@ async function initCatalog(options) {
         }, {
             dataField: 'code',
             width: 90,
+            caption: 'Артикул',
             alignment: 'center'
         }, {
             dataField: 'category',
-            alignment: 'right'
+            alignment: 'right',
+            caption: 'Категория',
         }, {
             dataField: 'name',
             alignment: 'right',
+            caption: 'Название',
             width: 120
         }, {
             dataField: 'current_price',
-            caption: 'Price',
+            caption: 'Цена',
             alignment: 'right',
-            width: 60
+            width: 80
         }, {
             dataField: 'supplier',
             alignment: 'right',
+            caption: 'Поставщик',
             width: 180
         }, {
-            caption: 'Cart',
+            dataField: 'in_cart',
+            alignment: 'right',
+            caption: '',
+        }, {
+            caption: '',
             alignment: 'center',
             width: 60,
             cellTemplate(container, options) {

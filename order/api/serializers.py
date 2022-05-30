@@ -5,11 +5,25 @@ from counterparty.api import serializers as counterparty_serializers
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderItem
         fields = [
             'id', 'product', 'count', 'price', 'sum'
         ]
+
+    def get_count(self, obj):
+        return int(obj.count)
+
+    def get_product(self, obj):
+
+        return {
+            'id': obj.product.id,
+            'name': obj.product.name,
+            'code': obj.product.code,
+        }
 
 
 class OrderStatusSerializer(serializers.ModelSerializer):
@@ -34,7 +48,6 @@ class CartListSerializer(serializers.ModelSerializer):
         ]
 
     def get_order_items_count(self, obj):
-        print('obj', obj)
         return obj.items.count()
 
 
